@@ -1,0 +1,22 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		A10000001 /* NetViewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetViewApp.swift; sourceTree = "<group>"; };
+		A10000002 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		A10000003 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
+		A10000004 /* LicenseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicenseManager.swift; sourceTree = "<group>"; };
+		A10000005 /* AutoStartManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoStartManager.swift; sourceTree = "<group>"; };
+		A10000006 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
+		A10000007 /* MonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorView.swift; sourceTree = "<group>"; };
+		A10000008 /* HistoryWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryWindowView.swift; sourceTree = "<group>"; };
+		A10000009 /* PaymentWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentWindowView.swift; sourceTree = "<group>"; };
+		A1000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1000000B /* NetView.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NetView.entitlements; sourceTree = "<group>"; };
+		A1000000C /* NetView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+	};
+	rootObject = A10000000 /* Project object */;
+}
