@@ -16,7 +16,7 @@ A native macOS network monitoring application that tracks your download and uplo
 
 ## System Requirements
 
-- macOS 12.0 (Monterey) or later
+- macOS 12.0 (Monterey) or later.
 - 64-bit Intel or Apple Silicon processor
 - ~20 MB disk space
 
