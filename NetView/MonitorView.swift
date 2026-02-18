@@ -16,8 +16,15 @@ struct MonitorView: View {
     @State private var trialDaysRemaining = 0
     @State private var showHistoryWindow = false
     @State private var showPaymentWindow = false
+    @State private var showContactCard = true  // Always true on startup
+    @State private var hoveredSocialIcon: Int? = nil
     
     private let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+    
+    // Social media links
+    private let twitterURL = "https://x.com/Hard_Code_T"
+    private let whatsappURL = "https://wa.me/2348165713623"
+    private let gmailURL = "mailto:firmino3535@gmail.com?subject=Contact from NetView"
     
     var body: some View {
         VStack(spacing: 0) {
@@ -106,6 +113,20 @@ struct MonitorView: View {
                 }
                 .buttonStyle(ActionButtonStyle(color: .purple))
                 
+                // Contact button
+                Button(action: {
+                    showContactCard.toggle()
+                }) {
+                    HStack {
+                        Image(systemName: "person.circle")
+                        Text("Contact")
+                            .font(.system(size: 12))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(ActionButtonStyle(color: .blue))
+                
                 if !isLicensed {
                     Button(action: {
                         showPaymentWindow = true
@@ -124,6 +145,65 @@ struct MonitorView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 8)
             
+            // Contact Card (shows below buttons)
+            if showContactCard {
+                VStack(spacing: 8) {
+                    Text("Developer Contact")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.gray)
+                    
+                    HStack(spacing: 16) {
+                        // Twitter
+                        SocialIconButton(
+                            imageName: "TwitterIcon",
+                            isHovered: hoveredSocialIcon == 0,
+                            action: {
+                                openURL(twitterURL)
+                            }
+                        )
+                        .onHover { isHovered in
+                            hoveredSocialIcon = isHovered ? 0 : nil
+                        }
+                        
+                        // WhatsApp
+                        SocialIconButton(
+                            imageName: "WhatsAppIcon",
+                            isHovered: hoveredSocialIcon == 1,
+                            action: {
+                                openURL(whatsappURL)
+                            }
+                        )
+                        .onHover { isHovered in
+                            hoveredSocialIcon = isHovered ? 1 : nil
+                        }
+                        
+                        // Gmail
+                        SocialIconButton(
+                            imageName: "GmailIcon",
+                            isHovered: hoveredSocialIcon == 2,
+                            action: {
+                                openURL(gmailURL)
+                            }
+                        )
+                        .onHover { isHovered in
+                            hoveredSocialIcon = isHovered ? 2 : nil
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(red: 18/255, green: 18/255, blue: 18/255))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                )
+                .padding(.horizontal, 8)
+                .padding(.bottom, 8)
+            }
+            
             // Trial warning
             if !isLicensed && trialDaysRemaining <= 7 {
                 Text("Trial: \(trialDaysRemaining) days left")
@@ -133,7 +213,7 @@ struct MonitorView: View {
             }
         }
         .background(Color.black.opacity(0.95))
-        .frame(width: 200, height: 140)
+        .frame(width: 200)
         .onReceive(timer) { _ in
             updateData()
         }
@@ -184,6 +264,57 @@ struct MonitorView: View {
             return String(format: "%.1f %@", value, units[unitIndex])
         }
     }
+    
+    private func openURL(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            NSWorkspace.shared.open(url)
+        }
+    }
+}
+
+// Social Icon Button Component
+struct SocialIconButton: View {
+    let imageName: String
+    let isHovered: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(isHovered ? Color(white: 0.18) : Color(white: 0.12))
+                    .frame(width: 40, height: 40)
+                
+                if let image = NSImage(named: imageName) {
+                    Image(nsImage: image)
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                } else {
+                    // Fallback SF Symbol icons if images not found
+                    Image(systemName: fallbackIcon(for: imageName))
+                        .font(.system(size: 20))
+                        .foregroundColor(.white)
+                }
+                
+                if isHovered {
+                    Circle()
+                        .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                        .frame(width: 42, height: 42)
+                }
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .cursor(isHovered ? .pointingHand : .arrow)
+    }
+    
+    private func fallbackIcon(for imageName: String) -> String {
+        switch imageName {
+        case "TwitterIcon": return "bird"
+        case "WhatsAppIcon": return "message.fill"
+        case "GmailIcon": return "envelope.fill"
+        default: return "link"
+        }
+    }
 }
 
 struct ActionButtonStyle: ButtonStyle {
@@ -196,6 +327,18 @@ struct ActionButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: 6)
                     .fill(color.opacity(configuration.isPressed ? 0.6 : 0.8))
             )
+    }
+}
+
+extension View {
+    func cursor(_ cursor: NSCursor) -> some View {
+        self.onHover { inside in
+            if inside {
+                cursor.push()
+            } else {
+                NSCursor.pop()
+            }
+        }
     }
 }
 

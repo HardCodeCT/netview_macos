@@ -2,7 +2,7 @@
 //  HistoryWindowView.swift
 //  NetView for macOS
 //
-//  Displays network usage history
+//  Displays network usage history with social media contact icons
 //
 
 import SwiftUI
@@ -15,8 +15,14 @@ struct HistoryWindowView: View {
     @State private var yearTotal: UInt64 = 0
     @State private var selectedDate: String?
     @State private var isCumulativeMode = false
+    @State private var hoveredSocialIcon: Int? = nil
     
     private let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+    
+    // Social media links (same as Windows version)
+    private let twitterURL = "https://x.com/Hard_Code_T"
+    private let whatsappURL = "https://wa.me/2348165713623"
+    private let gmailURL = "mailto:firmino3535@gmail.com?subject=Contact from NetView"
     
     var body: some View {
         VStack(spacing: 0) {
@@ -101,6 +107,55 @@ struct HistoryWindowView: View {
                     }
                 }
             }
+            
+            Spacer()
+            
+            // Social Media Icons Footer (just like Windows version)
+            HStack(spacing: 20) {
+                Text("Developer Contact:")
+                    .font(.system(size: 11))
+                    .foregroundColor(.gray)
+                
+                Spacer()
+                
+                // Twitter
+                SocialIconButton(
+                    imageName: "TwitterIcon",
+                    isHovered: hoveredSocialIcon == 0,
+                    action: {
+                        openURL(twitterURL)
+                    }
+                )
+                .onHover { isHovered in
+                    hoveredSocialIcon = isHovered ? 0 : nil
+                }
+                
+                // WhatsApp
+                SocialIconButton(
+                    imageName: "WhatsAppIcon",
+                    isHovered: hoveredSocialIcon == 1,
+                    action: {
+                        openURL(whatsappURL)
+                    }
+                )
+                .onHover { isHovered in
+                    hoveredSocialIcon = isHovered ? 1 : nil
+                }
+                
+                // Gmail
+                SocialIconButton(
+                    imageName: "GmailIcon",
+                    isHovered: hoveredSocialIcon == 2,
+                    action: {
+                        openURL(gmailURL)
+                    }
+                )
+                .onHover { isHovered in
+                    hoveredSocialIcon = isHovered ? 2 : nil
+                }
+            }
+            .padding()
+            .background(Color.black.opacity(0.8))
         }
         .background(Color.black.opacity(0.95))
         .frame(width: 700, height: 600)
@@ -138,6 +193,12 @@ struct HistoryWindowView: View {
     
     private func formatBytes(_ bytes: UInt64) -> String {
         return HistoryManager.shared.formatBytes(bytes)
+    }
+    
+    private func openURL(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
 
