@@ -79,8 +79,6 @@ class AutoStartManager {
     }
     
     private func disableAutoStartLegacy() -> Bool {
-        let bundleURL = Bundle.main.bundleURL
-        
         let script = """
         tell application "System Events"
             delete login item "NetView"
@@ -108,7 +106,8 @@ class AutoStartManager {
         
         var error: NSDictionary?
         if let scriptObject = NSAppleScript(source: script) {
-            if let result = scriptObject.executeAndReturnError(&error) {
+            let result = scriptObject.executeAndReturnError(&error)
+            if error == nil {
                 let loginItems = result.stringValue ?? ""
                 return loginItems.contains("NetView")
             }
