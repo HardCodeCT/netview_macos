@@ -185,11 +185,11 @@ class DataManager {
     private func getCurrentInterfaceStats() -> (inBytes: UInt64, outBytes: UInt64)? {
         guard let interface = selectedInterface else { return nil }
         
-        var ifaddrs: UnsafeMutablePointer<ifaddrs>?
-        guard getifaddrs(&ifaddrs) == 0 else { return nil }
-        defer { freeifaddrs(ifaddrs) }
+        var ifaddrsPtr: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddrsPtr) == 0 else { return nil }
+        defer { freeifaddrs(ifaddrsPtr) }
         
-        var ptr = ifaddrs
+        var ptr = ifaddrsPtr
         while ptr != nil {
             defer { ptr = ptr?.pointee.ifa_next }
             
@@ -198,9 +198,9 @@ class DataManager {
             
             if name == interface {
                 if addr.ifa_addr.pointee.sa_family == UInt8(AF_LINK) {
-                    // Cast to link layer data
-                    let data = withUnsafePointer(to: &addr.ifa_data) { $0 }
-                    if let ifData = data?.pointee?.assumingMemoryBound(to: if_data.self).pointee {
+                    // Cast to link layer data - FIXED: Use proper pointer handling
+                    if let dataPtr = addr.ifa_data {
+                        let ifData = dataPtr.assumingMemoryBound(to: if_data.self).pointee
                         let inBytes = UInt64(ifData.ifi_ibytes)
                         let outBytes = UInt64(ifData.ifi_obytes)
                         return (inBytes, outBytes)

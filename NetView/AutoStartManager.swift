@@ -7,6 +7,7 @@
 
 import Foundation
 import ServiceManagement
+import AppKit
 
 class AutoStartManager {
     static let shared = AutoStartManager()
@@ -24,7 +25,7 @@ class AutoStartManager {
                 return false
             }
         } else {
-            // For macOS 12 and earlier, use legacy method
+            // For macOS 12, use simpler approach
             return enableAutoStartLegacy()
         }
     }
@@ -55,54 +56,43 @@ class AutoStartManager {
     // MARK: - Legacy Methods (macOS 12 and earlier)
     
     private func enableAutoStartLegacy() -> Bool {
-        guard let bundleURL = Bundle.main.bundleURL else { return false }
+        let bundleURL = Bundle.main.bundleURL
         
-        let workspace = NSWorkspace.shared
+        // Use osascript as a simpler approach for macOS 12
+        let script = """
+        tell application "System Events"
+            make login item at end with properties {path:"\(bundleURL.path)", hidden:false}
+        end tell
+        """
         
-        // Check if already in login items
-        if isEnabledLegacy() {
-            return true
+        var error: NSDictionary?
+        if let scriptObject = NSAppleScript(source: script) {
+            scriptObject.executeAndReturnError(&error)
+            if error == nil {
+                print("[AutoStartManager] Auto-start enabled (legacy)")
+                return true
+            }
         }
         
-        // Add to login items using deprecated API (still works on macOS 12)
-        // Note: This uses LSSharedFileList which is deprecated but functional
-        // For production, consider using SMLoginItemSetEnabled
-        
-        let loginItems = LSSharedFileListCreate(nil, kLSSharedFileListSessionLoginItems.takeRetainedValue(), nil)
-        if let loginItemsRef = loginItems?.takeRetainedValue() {
-            LSSharedFileListInsertItemURL(
-                loginItemsRef,
-                kLSSharedFileListItemLast.takeRetainedValue(),
-                nil,
-                nil,
-                bundleURL as CFURL,
-                nil,
-                nil
-            )
-            print("[AutoStartManager] Auto-start enabled (legacy)")
-            return true
-        }
-        
+        print("[AutoStartManager] Failed to enable auto-start (legacy)")
         return false
     }
     
     private func disableAutoStartLegacy() -> Bool {
-        guard let bundleURL = Bundle.main.bundleURL else { return false }
+        let bundleURL = Bundle.main.bundleURL
         
-        let loginItems = LSSharedFileListCreate(nil, kLSSharedFileListSessionLoginItems.takeRetainedValue(), nil)
-        if let loginItemsRef = loginItems?.takeRetainedValue() {
-            let loginItemsArray = LSSharedFileListCopySnapshot(loginItemsRef, nil).takeRetainedValue() as? [LSSharedFileListItem]
-            
-            if let items = loginItemsArray {
-                for item in items {
-                    if let itemURL = LSSharedFileListItemCopyResolvedURL(item, 0, nil)?.takeRetainedValue() as URL? {
-                        if itemURL == bundleURL {
-                            LSSharedFileListItemRemove(loginItemsRef, item)
-                            print("[AutoStartManager] Auto-start disabled (legacy)")
-                            return true
-                        }
-                    }
-                }
+        let script = """
+        tell application "System Events"
+            delete login item "NetView"
+        end tell
+        """
+        
+        var error: NSDictionary?
+        if let scriptObject = NSAppleScript(source: script) {
+            scriptObject.executeAndReturnError(&error)
+            if error == nil {
+                print("[AutoStartManager] Auto-start disabled (legacy)")
+                return true
             }
         }
         
@@ -110,20 +100,17 @@ class AutoStartManager {
     }
     
     private func isEnabledLegacy() -> Bool {
-        guard let bundleURL = Bundle.main.bundleURL else { return false }
+        let script = """
+        tell application "System Events"
+            get the name of every login item
+        end tell
+        """
         
-        let loginItems = LSSharedFileListCreate(nil, kLSSharedFileListSessionLoginItems.takeRetainedValue(), nil)
-        if let loginItemsRef = loginItems?.takeRetainedValue() {
-            let loginItemsArray = LSSharedFileListCopySnapshot(loginItemsRef, nil).takeRetainedValue() as? [LSSharedFileListItem]
-            
-            if let items = loginItemsArray {
-                for item in items {
-                    if let itemURL = LSSharedFileListItemCopyResolvedURL(item, 0, nil)?.takeRetainedValue() as URL? {
-                        if itemURL == bundleURL {
-                            return true
-                        }
-                    }
-                }
+        var error: NSDictionary?
+        if let scriptObject = NSAppleScript(source: script) {
+            if let result = scriptObject.executeAndReturnError(&error) {
+                let loginItems = result.stringValue ?? ""
+                return loginItems.contains("NetView")
             }
         }
         

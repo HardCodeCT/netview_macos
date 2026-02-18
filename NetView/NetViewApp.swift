@@ -59,7 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Start network monitoring
-        dataManager?.startMonitoring()
+        _ = dataManager?.startMonitoring()
         
         // Create status bar controller (menu bar widget)
         statusBarController = StatusBarController()
@@ -73,7 +73,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     private func setupFirstRun() {
         // Configure auto-start
-        AutoStartManager.shared.enableAutoStart()
+        _ = AutoStartManager.shared.enableAutoStart()
         
         // Start trial
         licenseManager?.startTrial()
