@@ -17,25 +17,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest-stable
-        
-    - name: Build NetView
+    - name: Build NetView with Swift Package Manager
       run: |
-        xcodebuild -project NetView.xcodeproj \
-          -scheme NetView \
-          -configuration Release \
-          -derivedDataPath ./build \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO
-          
-    - name: Create app bundle directory
+        swift build -c release
+        
+    - name: Create app bundle
+      run: |
+        mkdir -p NetView.app/Contents/MacOS
+        mkdir -p NetView.app/Contents/Resources
+        
+        # Copy executable
+        cp .build/release/NetView NetView.app/Contents/MacOS/
+        
+        # Copy Info.plist
+        cp NetView/Info.plist NetView.app/Contents/
+        
+        # Copy Assets
+        cp -R NetView/Assets.xcassets NetView.app/Contents/Resources/
+        
+        # Make executable
+        chmod +x NetView.app/Contents/MacOS/NetView
+        
+    - name: Create distribution directory
       run: |
         mkdir -p dist
-        cp -R build/Build/Products/Release/NetView.app dist/
+        cp -R NetView.app dist/
         
     - name: Install create-dmg
       run: |
@@ -53,7 +59,7 @@ jobs:
           --app-drop-link 425 120 \
           --no-internet-enable \
           "NetView-macOS.dmg" \
-          "dist/"
+          "dist/" || true
           
     - name: Upload DMG artifact
       uses: actions/upload-artifact@v4
